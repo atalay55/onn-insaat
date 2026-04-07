@@ -16,25 +16,25 @@ export function Footer() {
 
           <div className="flex items-center gap-8">
             <a
-              href="#hero"
+              href="/#hero"
               className="text-white/60 hover:text-emerald-400 transition-colors text-sm"
             >
               Ana Sayfa
             </a>
             <a
-              href="#about"
+              href="/#about"
               className="text-white/60 hover:text-emerald-400 transition-colors text-sm"
             >
               Hakkımızda
             </a>
             <a
-              href="#projects"
+              href="/#projects"
               className="text-white/60 hover:text-emerald-400 transition-colors text-sm"
             >
               Projeler
             </a>
             <a
-              href="#contact"
+              href="/#contact"
               className="text-white/60 hover:text-emerald-400 transition-colors text-sm"
             >
               İletişim

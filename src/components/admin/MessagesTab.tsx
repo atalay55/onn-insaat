@@ -12,7 +12,7 @@ interface Message {
 
 interface MessagesTabProps {
   messages: Message[];
-  onDeleteMessage: (id: string) => Promise<void>;
+  onDeleteMessage: (id: string) => void;
 }
 
 export function MessagesTab({ messages, onDeleteMessage }: MessagesTabProps) {

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { LogOut, Home, Menu, X, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -32,37 +31,40 @@ export function AdminHeader({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formMessage, setFormMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormMessage(null);
     if (newPassword !== confirmPassword) {
-      toast.error("Şifreler eşleşmiyor!");
+      setFormMessage({ type: 'error', text: "Şifreler eşleşmiyor!" });
       return;
     }
     if (newPassword.length < 6) {
-      toast.error("Şifre en az 6 karakter olmalıdır!");
+      setFormMessage({ type: 'error', text: "Şifre en az 6 karakter olmalıdır!" });
       return;
     }
     try {
       setLoading(true);
       await changePassword(newPassword);
-      toast.success("Şifreniz başarıyla değiştirildi. Lütfen yeni şifrenizle giriş yapın.");
-      setIsPasswordDialogOpen(false);
-      setNewPassword('');
-      setConfirmPassword('');
+      setFormMessage({ type: 'success', text: "Şifreniz başarıyla değiştirildi. Yeni şifrenizle giriş yapabilmeniz için çıkış yapılıyor..." });
       
       // Şifre değiştikten sonra Firebase Auth token'ları geçersiz kılınabileceğinden
       // ve yeni şifreyle girişin test edilmesi için çıkışa zorluyoruz:
       setTimeout(() => {
+        setIsPasswordDialogOpen(false);
+        setNewPassword('');
+        setConfirmPassword('');
+        setFormMessage(null);
         onLogout();
-      }, 2000);
+      }, 2500);
       
     } catch (error: any) {
       console.error(error);
       if (error.code === 'auth/requires-recent-login') {
-        toast.error("Güvenlik nedeniyle şifre değiştirmeden önce tekrar giriş yapmalısınız. Lütfen çıkış yapıp tekrar giriş yapın.");
+        setFormMessage({ type: 'error', text: "Güvenlik nedeniyle şifre değiştirmeden önce tekrar giriş yapmalısınız. Lütfen menüden çıkış yapıp tekrar giriş yapın." });
       } else {
-        toast.error("Şifre değiştirilirken bir hata oluştu: " + error.message);
+        setFormMessage({ type: 'error', text: "Şifre değiştirilirken bir hata oluştu: " + error.message });
       }
     } finally {
       setLoading(false);
@@ -151,7 +153,14 @@ export function AdminHeader({
       </header>
 
       {/* Password Change Dialog */}
-      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+      <Dialog open={isPasswordDialogOpen} onOpenChange={(open) => {
+        setIsPasswordDialogOpen(open);
+        if (!open) {
+          setFormMessage(null);
+          setNewPassword('');
+          setConfirmPassword('');
+        }
+      }}>
         <DialogContent className="bg-zinc-900 border border-zinc-800 text-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Şifre Değiştir</DialogTitle>
@@ -187,6 +196,18 @@ export function AdminHeader({
                 minLength={6}
               />
             </div>
+
+            {formMessage && (
+              <div 
+                className={`p-3 rounded border text-sm mt-4 ${
+                  formMessage.type === 'success' 
+                    ? 'border-emerald-600 bg-emerald-600/10 text-emerald-400' 
+                    : 'border-red-600 bg-red-600/10 text-red-400'
+                }`}
+              >
+                {formMessage.text}
+              </div>
+            )}
             
             <DialogFooter className="mt-6">
               <Button 

@@ -11,6 +11,16 @@ import { SketchTab } from '@/components/admin/SketchTab';
 import { MessagesTab } from '@/components/admin/MessagesTab';
 import { TeamTab } from '@/components/admin/TeamTab';
 import { AlertCircle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const IS_TEST_MODE = !!localStorage.getItem('testAdmin');
 
@@ -41,6 +51,9 @@ export function AdminPanel() {
     role: '',
     email: '',
   });
+  
+  const [formMessage, setFormMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{type: 'project'|'sketch'|'team'|'message'; id: string; title: string} | null>(null);
   
   // 2. FORM STATE'İNE YENİ ALANLARI EKLEDİK (Text olarak tutuyoruz)
   const [formData, setFormData] = useState({
@@ -120,15 +133,16 @@ export function AdminPanel() {
 
   const handleSaveProject = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormMessage(null);
     
     if (!formData.name || !formData.location || !formData.slug) {
-      alert('Lütfen tüm alanları doldurunuz');
+      setFormMessage({ type: 'error', text: 'Lütfen zorunlu alanları doldurunuz' });
       return;
     }
 
     try {
       if (IS_TEST_MODE) {
-        alert('Test Mode: Firestore bağlantısı yok. Firebase ayarlarını tamamlayın.');
+        setFormMessage({ type: 'error', text: 'Test Mode: Firestore bağlantısı yok. Firebase ayarlarını tamamlayın.' });
         return;
       }
 
@@ -154,25 +168,32 @@ export function AdminPanel() {
       };
 
       await AdminService.saveProject(dataToSave, editingProject?.id);
-      
-      setFormData({
-        name: '', location: '', status: 'PROJE AŞAMASINDA', duration: '', 
-        image: '', slug: '', description: '', imagesText: '', featuresText: '',
-      });
-      setEditingProject(null);
-      setShowForm(false);
       fetchProjects();
+      
+      setFormMessage({ type: 'success', text: 'Proje başarıyla kaydedildi!' });
+      
+      setTimeout(() => {
+        setFormData({
+          name: '', location: '', status: 'PROJE AŞAMASINDA', duration: '', 
+          image: '', slug: '', description: '', imagesText: '', featuresText: '',
+        });
+        setEditingProject(null);
+        setShowForm(false);
+        setFormMessage(null);
+      }, 1500);
+      
     } catch (error) {
       console.error('Proje kaydedilirken hata:', error);
-      alert('Hata oluştu');
+      setFormMessage({ type: 'error', text: 'Proje kaydedilirken bir hata oluştu.' });
     }
   };
 
   const handleSaveSketch = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormMessage(null);
     
     if (!sketchFormData.imageUrl) {
-      alert('Lütfen resim URL\'sini giriniz');
+      setFormMessage({ type: 'error', text: 'Lütfen resim URL\'sini giriniz' });
       return;
     }
 
@@ -190,33 +211,39 @@ export function AdminPanel() {
           description: sketchFormData.description,
         });
       }
-      
-      setSketchFormData({
-        imageUrl: '',
-        title: '',
-        description: '',
-      });
-      setEditingSketch(null);
-      setShowSketchForm(false);
       fetchSketches();
-      alert('Eskiz başarıyla kaydedildi!');
+      
+      setFormMessage({ type: 'success', text: 'Eskiz başarıyla kaydedildi!' });
+      
+      setTimeout(() => {
+        setSketchFormData({
+          imageUrl: '',
+          title: '',
+          description: '',
+        });
+        setEditingSketch(null);
+        setShowSketchForm(false);
+        setFormMessage(null);
+      }, 1500);
+      
     } catch (error) {
       console.error('Eskiz kaydedilirken hata:', error);
-      alert('Eskiz kaydedilirken hata oluştu');
+      setFormMessage({ type: 'error', text: 'Eskiz kaydedilirken hata oluştu.' });
     }
   };
 
   const handleSaveTeamMember = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormMessage(null);
     
     if (!teamFormData.name || !teamFormData.role || !teamFormData.email) {
-      alert('Lütfen tüm alanları doldurunuz');
+      setFormMessage({ type: 'error', text: 'Lütfen tüm alanları doldurunuz' });
       return;
     }
 
     try {
       if (IS_TEST_MODE) {
-        alert('Test Mode: Firestore bağlantısı yok. Firebase ayarlarını tamamlayın.');
+        setFormMessage({ type: 'error', text: 'Test Mode: Firestore bağlantısı yok. Firebase ayarlarını tamamlayın.' });
         return;
       }
 
@@ -231,40 +258,29 @@ export function AdminPanel() {
       } else {
         await TeamService.saveMember(dataToSave);
       }
-      
-      setTeamFormData({
-        name: '',
-        role: '',
-        email: '',
-      });
-      setEditingTeamMember(null);
-      setShowTeamForm(false);
       fetchTeam();
-      alert('Ekip üyesi başarıyla kaydedildi!');
+      
+      setFormMessage({ type: 'success', text: 'Ekip üyesi başarıyla kaydedildi!' });
+      
+      setTimeout(() => {
+        setTeamFormData({
+          name: '',
+          role: '',
+          email: '',
+        });
+        setEditingTeamMember(null);
+        setShowTeamForm(false);
+        setFormMessage(null);
+      }, 1500);
+      
     } catch (error) {
       console.error('Ekip üyesi kaydedilirken hata:', error);
-      alert('Ekip üyesi kaydedilirken hata oluştu');
+      setFormMessage({ type: 'error', text: 'Ekip üyesi kaydedilirken hata oluştu.' });
     }
   };
 
-  const handleDeleteTeamMember = async (id: string) => {
-    if (!confirm('Bu ekip üyesini silmek istediğinizden emin misiniz?')) {
-      return;
-    }
-
-    try {
-      if (IS_TEST_MODE) {
-        alert('Test Mode: Firestore bağlantısı yok. Firebase ayarlarını tamamlayın.');
-        return;
-      }
-
-      await TeamService.deleteMember(id);
-      fetchTeam();
-      alert('Ekip üyesi başarıyla silindi!');
-    } catch (error) {
-      console.error('Ekip üyesi silinirken hata:', error);
-      alert('Ekip üyesi silinirken hata oluştu');
-    }
+  const handleDeleteTeamMember = (id: string) => {
+    setDeleteConfirm({ type: 'team', id, title: 'Bu ekip üyesini silmek istediğinize emin misiniz?' });
   };
 
   const handleEditTeamMember = (member: TeamMember) => {
@@ -287,45 +303,45 @@ export function AdminPanel() {
     setShowSketchForm(true);
   };
 
-  const handleDeleteSketch = async (id: string) => {
-    if (confirm('Eskizi silmek istediğinizden emin misiniz?')) {
-      try {
-        await SketchService.deleteSketch(id);
-        fetchSketches();
-      } catch (error) {
-        console.error('Eskiz silinirken hata:', error);
-        alert('Eskiz silinirken hata oluştu');
-      }
-    }
+  const handleDeleteSketch = (id: string) => {
+    setDeleteConfirm({ type: 'sketch', id, title: 'Bu eskizi silmek istediğinize emin misiniz?' });
   };
 
-  const handleDeleteProject = async (id: string) => {
-    if (confirm('Projeyi silmek istediğinizden emin misiniz?')) {
-      try {
-        if (IS_TEST_MODE) {
-          alert('Test Mode: Firestore bağlantısı yok.');
-          return;
-        }
-        await AdminService.deleteProject(id);
-        fetchProjects();
-      } catch (error) {
-        console.error('Proje silinirken hata:', error);
-        alert('Hata oluştu');
-      }
-    }
+  const handleDeleteProject = (id: string) => {
+    setDeleteConfirm({ type: 'project', id, title: 'Bu projeyi silmek istediğinize emin misiniz?' });
   };
 
-  const handleDeleteMessage = async (id: string) => {
+  const handleDeleteMessage = (id: string) => {
+    setDeleteConfirm({ type: 'message', id, title: 'Bu mesajı silmek istediğinize emin misiniz?' });
+  };
+
+  const executeDelete = async () => {
+    if (!deleteConfirm) return;
+    
     try {
       if (IS_TEST_MODE) {
-        alert('Test Mode: Firestore bağlantısı yok.');
+        setFormMessage({ type: 'error', text: 'Test Mode: Silme işlemi test modunda yapılamaz.' });
+        setDeleteConfirm(null);
         return;
       }
-      await AdminService.deleteMessage(id);
-      fetchMessages();
+      
+      if (deleteConfirm.type === 'project') {
+        await AdminService.deleteProject(deleteConfirm.id);
+        fetchProjects();
+      } else if (deleteConfirm.type === 'sketch') {
+        await SketchService.deleteSketch(deleteConfirm.id);
+        fetchSketches();
+      } else if (deleteConfirm.type === 'team') {
+        await TeamService.deleteMember(deleteConfirm.id);
+        fetchTeam();
+      } else if (deleteConfirm.type === 'message') {
+        await AdminService.deleteMessage(deleteConfirm.id);
+        fetchMessages();
+      }
     } catch (error) {
-      console.error('Mesaj silinirken hata:', error);
-      alert('Hata oluştu');
+      console.error('Silinirken hata:', error);
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -373,7 +389,7 @@ export function AdminPanel() {
         onMobileMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
       />
       
-      <TabNavigation activeTab={tab} onTabChange={setTab} messagesCount={messages.length} sketchesCount={sketches.length} teamCount={team.length} />
+      <TabNavigation activeTab={tab} onTabChange={setTab} messagesCount={messages.length} sketchesCount={sketches.length} teamCount={team.length} projectsCount={projects.length} />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
         {IS_TEST_MODE && (
@@ -392,6 +408,7 @@ export function AdminPanel() {
             showForm={showForm}
             editingProject={editingProject}
             formData={formData}
+            formMessage={formMessage}
             loading={loading}
             onShowForm={() => {
               setEditingProject(null);
@@ -399,6 +416,7 @@ export function AdminPanel() {
                 name: '', location: '', status: 'PROJE AŞAMASINDA', duration: '', 
                 image: '', slug: '', description: '', imagesText: '', featuresText: '',
               });
+              setFormMessage(null);
               setShowForm(!showForm);
             }}
             onFormDataChange={setFormData}
@@ -414,6 +432,7 @@ export function AdminPanel() {
             showForm={showSketchForm}
             sketchFormData={sketchFormData}
             editingSketch={editingSketch}
+            formMessage={formMessage}
             onShowForm={() => {
               setEditingSketch(null);
               setSketchFormData({
@@ -421,6 +440,7 @@ export function AdminPanel() {
                 title: '',
                 description: '',
               });
+              setFormMessage(null);
               setShowSketchForm(!showSketchForm);
             }}
             onFormDataChange={setSketchFormData}
@@ -440,6 +460,7 @@ export function AdminPanel() {
             showForm={showTeamForm}
             teamFormData={teamFormData}
             editingTeamMember={editingTeamMember}
+            formMessage={formMessage}
             onShowForm={() => {
               setEditingTeamMember(null);
               setTeamFormData({
@@ -447,6 +468,7 @@ export function AdminPanel() {
                 role: '',
                 email: '',
               });
+              setFormMessage(null);
               setShowTeamForm(!showTeamForm);
             }}
             onFormDataChange={setTeamFormData}
@@ -456,6 +478,21 @@ export function AdminPanel() {
           />
         )}
       </div>
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent className="bg-zinc-900 border border-zinc-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Silme İşlemini Onayla</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              {deleteConfirm?.title} Bu işlem geri alınamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-zinc-700 text-white hover:bg-zinc-800 focus:bg-zinc-800 focus:text-white">İptal</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-red-600 hover:bg-red-700 text-white">Evet, Sil</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

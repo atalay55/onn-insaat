@@ -13,6 +13,7 @@ interface TeamTabProps {
     email: string;
   };
   editingTeamMember: TeamMember | null;
+  formMessage?: {type: 'success' | 'error'; text: string} | null;
   onShowForm: () => void;
   onFormDataChange: (data: { name: string; role: string; email: string }) => void;
   onSaveTeamMember: (e: React.FormEvent) => void;
@@ -25,6 +26,7 @@ export function TeamTab({
   showForm,
   teamFormData,
   editingTeamMember,
+  formMessage,
   onShowForm,
   onFormDataChange,
   onSaveTeamMember,
@@ -103,6 +105,19 @@ export function TeamTab({
                 required
               />
             </div>
+            
+            {formMessage && (
+              <div 
+                className={`p-3 rounded border text-sm mt-2 ${
+                  formMessage.type === 'success' 
+                    ? 'border-emerald-600 bg-emerald-600/10 text-emerald-400' 
+                    : 'border-red-600 bg-red-600/10 text-red-400'
+                }`}
+              >
+                {formMessage.text}
+              </div>
+            )}
+
             <div className="flex gap-3">
               <Button
                 type="submit"

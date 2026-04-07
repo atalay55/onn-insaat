@@ -21,11 +21,12 @@ interface ProjectTabProps {
   showForm: boolean;
   editingProject: Project | null;
   formData: any;
+  formMessage?: {type: 'success' | 'error'; text: string} | null;
   onShowForm: () => void;
   onFormDataChange: (data: any) => void;
   onSaveProject: (e: React.FormEvent) => Promise<void>;
   onEditProject: (project: Project) => void;
-  onDeleteProject: (id: string) => Promise<void>;
+  onDeleteProject: (id: string) => void;
 }
 
 export function ProjectTab({
@@ -38,6 +39,7 @@ export function ProjectTab({
   onEditProject,
   onDeleteProject,
   editingProject,
+  formMessage,
 }: ProjectTabProps) {
   const generateSlug = (text: string) => {
     return text.toString().toLowerCase()
@@ -175,6 +177,18 @@ export function ProjectTab({
                 />
               </div>
             </div>
+
+            {formMessage && (
+              <div 
+                className={`p-3 rounded border text-sm mt-2 ${
+                  formMessage.type === 'success' 
+                    ? 'border-emerald-600 bg-emerald-600/10 text-emerald-400' 
+                    : 'border-red-600 bg-red-600/10 text-red-400'
+                }`}
+              >
+                {formMessage.text}
+              </div>
+            )}
 
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">

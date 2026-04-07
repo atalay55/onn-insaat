@@ -3,6 +3,7 @@ import { Building2, MessageSquare, Image, Users } from 'lucide-react';
 interface TabNavigationProps {
   activeTab: 'projects' | 'messages' | 'sketches' | 'team';
   onTabChange: (tab: 'projects' | 'messages' | 'sketches' | 'team') => void;
+  projectsCount?: number;
   messagesCount: number;
   sketchesCount: number;
   teamCount?: number;
@@ -11,6 +12,7 @@ interface TabNavigationProps {
 export function TabNavigation({
   activeTab,
   onTabChange,
+  projectsCount = 0,
   messagesCount,
   sketchesCount,
   teamCount = 0,
@@ -20,6 +22,7 @@ export function TabNavigation({
       id: 'projects' as const,
       label: 'Projeler',
       icon: Building2,
+      count: projectsCount,
     },
     {
       id: 'messages' as const,

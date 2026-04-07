@@ -23,7 +23,7 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isOnEskizlerPage = location.pathname === "/eskizler";
+  const isOnSubPage = location.pathname === "/eskizler" || location.pathname.startsWith("/project/");
 
   const navLinks = [
     { name: "Ana Sayfa", hash: "hero" },
@@ -68,7 +68,7 @@ export function Navigation() {
                 >
                   {link.name}
                 </Link>
-              ) : isOnEskizlerPage ? (
+              ) : isOnSubPage ? (
                 <Link
                   key={link.name}
                   to="/"
@@ -141,7 +141,7 @@ export function Navigation() {
                   >
                     {link.name}
                   </Link>
-                ) : isOnEskizlerPage ? (
+                ) : isOnSubPage ? (
                   <Link
                     key={link.name}
                     to="/"

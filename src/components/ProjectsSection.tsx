@@ -61,7 +61,7 @@ export function ProjectsSection({ projects, loading }: ProjectsSectionProps) {
           </p>
         </div>
         {loading ? (
-          <div className="text-center py-20 text-white/70">
+          <div className="flex items-center justify-center min-h-[50vh] text-white/70">
             Projeler yükleniyor...
           </div>
         ) : projects.length === 0 ? (

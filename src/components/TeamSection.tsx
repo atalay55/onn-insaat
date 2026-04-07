@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Mail, Users } from "lucide-react";
 import { TeamService, type TeamMember } from "@/services/teamService";
 
-export function TeamSection() {
+interface TeamSectionProps {
+  teamData?: TeamMember[];
+  loading?: boolean;
+}
+
+export function TeamSection({ teamData: externalTeamData, loading: externalLoading }: TeamSectionProps = {}) {
   const sectionRef = useRef<HTMLElement>(null);
-  const [team, setTeam] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [team, setTeam] = useState<TeamMember[]>(externalTeamData || []);
+  const [loading, setLoading] = useState(externalTeamData ? false : true);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -25,49 +30,28 @@ export function TeamSection() {
     return () => observer.disconnect();
   }, [team]);
 
+  // If external data provided (from App.tsx cache), use it directly — no Firebase fetch
   useEffect(() => {
+    if (externalTeamData) {
+      setTeam(externalTeamData);
+      setLoading(externalLoading ?? false);
+      return;
+    }
+
+    // Fallback: fetch independently (when used standalone)
     const fetchTeam = async () => {
       try {
-        console.log("TeamSection: Firebase'den ekip üyeleri çekiliyor...");
         const teamData = await TeamService.getAllMembers();
-        console.log("TeamSection: Çekilen ekip üyeleri:", teamData);
         setTeam(teamData);
-        console.log("TeamSection: team state güncellendi, yeni değer:", teamData);
       } catch (error) {
         console.error("Çalışanlar yüklenirken hata:", error);
-        // Fallback: Eski hardcoded veriler
-        console.log("TeamSection: Firebase başarısız, fallback veriler kullanılıyor");
         setTeam([
-          {
-            name: "Nuri ÖZTÜRK",
-            role: "Genel Müdür / Mimar",
-            email: "nuri@onn.com.tr",
-          },
-          {
-            name: "Onur ÖZTÜRK",
-            role: "Genel Koordinatör / İç Mimar",
-            email: "onur@onn.com.tr",
-          },
-          {
-            name: "Ergül Şit",
-            role: "Proje Müdürü / İnş. Müh.",
-            email: "ergul@onn.com.tr",
-          },
-          {
-            name: "Hamza Çerkez",
-            role: "Şantiye Şefi / İnş. Müh.",
-            email: "hamza@onn.com.tr",
-          },
-          {
-            name: "Betül Mandalı",
-            role: "Mimari Proje / Mimar",
-            email: "betul@onn.com.tr",
-          },
-          {
-            name: "Fatma Güler",
-            role: "Muhasebe",
-            email: "muhasebe@onn.com.tr",
-          },
+          { name: "Nuri ÖZTÜRK", role: "Genel Müdür / Mimar", email: "nuri@onn.com.tr" },
+          { name: "Onur ÖZTÜRK", role: "Genel Koordinatör / İç Mimar", email: "onur@onn.com.tr" },
+          { name: "Ergül Şit", role: "Proje Müdürü / İnş. Müh.", email: "ergul@onn.com.tr" },
+          { name: "Hamza Çerkez", role: "Şantiye Şefi / İnş. Müh.", email: "hamza@onn.com.tr" },
+          { name: "Betül Mandalı", role: "Mimari Proje / Mimar", email: "betul@onn.com.tr" },
+          { name: "Fatma Güler", role: "Muhasebe", email: "muhasebe@onn.com.tr" },
         ]);
       } finally {
         setLoading(false);
@@ -75,12 +59,12 @@ export function TeamSection() {
     };
 
     fetchTeam();
-  }, []);
+  }, [externalTeamData, externalLoading]);
 
   if (loading) {
     return (
-      <section id="team" ref={sectionRef} className="py-24 lg:py-32 bg-black">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <section id="team" ref={sectionRef} className="py-24 lg:py-32 bg-black min-h-[50vh] flex flex-col justify-center">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full">
           <div className="text-center">
             <p className="text-white/60">Çalışanlar yükleniyor...</p>
           </div>

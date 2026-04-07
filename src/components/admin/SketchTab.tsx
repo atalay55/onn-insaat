@@ -15,11 +15,12 @@ interface SketchTabProps {
   showForm: boolean;
   sketchFormData: any;
   editingSketch: Sketch | null;
+  formMessage?: {type: 'success' | 'error'; text: string} | null;
   onShowForm: () => void;
   onFormDataChange: (data: any) => void;
   onSaveSketch: (e: React.FormEvent) => Promise<void>;
   onEditSketch: (sketch: Sketch) => void;
-  onDeleteSketch: (id: string) => Promise<void>;
+  onDeleteSketch: (id: string) => void;
 }
 
 export function SketchTab({
@@ -27,6 +28,7 @@ export function SketchTab({
   showForm,
   sketchFormData,
   editingSketch,
+  formMessage,
   onShowForm,
   onFormDataChange,
   onSaveSketch,
@@ -84,6 +86,18 @@ export function SketchTab({
                 className="w-full bg-zinc-800 border border-zinc-700 rounded text-white px-3 py-2 resize-none"
               />
             </div>
+
+            {formMessage && (
+              <div 
+                className={`p-3 rounded border text-sm mt-2 ${
+                  formMessage.type === 'success' 
+                    ? 'border-emerald-600 bg-emerald-600/10 text-emerald-400' 
+                    : 'border-red-600 bg-red-600/10 text-red-400'
+                }`}
+              >
+                {formMessage.text}
+              </div>
+            )}
 
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
